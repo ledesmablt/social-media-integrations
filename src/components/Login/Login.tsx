@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import * as firebase from 'firebase/app';
+import firebase from './../Firebase';
 
 // @ts-ignore
 import FB from 'fb';
 
-import 'firebase/auth';
-import 'firebase/firestore';
-
 const appCredentials = require('./../../credentials.json');
-const firebaseCredentials = appCredentials.firebase;
 const facebookCredentials = appCredentials.facebook;
 
 // firebase init
-firebase.initializeApp(firebaseCredentials);
 let db = firebase.firestore();
 var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('email');
 provider.addScope('manage_pages');
 
 const fbGraph = "https://graph.facebook.com/v6.0/";
-
 
 
 function Login() {
