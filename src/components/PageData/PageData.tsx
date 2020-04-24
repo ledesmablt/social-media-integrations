@@ -6,9 +6,6 @@ import FB from 'fb';
 
 // firebase init
 let db = firebase.firestore();
-var provider = new firebase.auth.FacebookAuthProvider();
-provider.addScope('email');
-provider.addScope('manage_pages');
 
 
 function PageData() {
