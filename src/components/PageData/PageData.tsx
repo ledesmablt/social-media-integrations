@@ -24,30 +24,45 @@ function PageData() {
 
   const getFacebookPages = async () => {
     console.log('getting page data from firebase');
-    var userDoc = db.collection('users').doc(currentUser!.uid);
-    const fbPagesFirebase = await userDoc.collection('pages').get();
+    var userPages = db.collection('pages').where('uid', '==', currentUser!.uid);
+    const fbPagesFirebase = await userPages.get();
     setFbPages(fbPagesFirebase.docs.map((doc: any) => doc.data()));
   }
 
   const syncPageData = async () => {
     // get user's fb pages
-    var userDoc = db.collection('users').doc(currentUser!.uid);
+    const uid = currentUser!.uid;
+    var userDoc = db.collection('users').doc(uid);
     const fbPages = await userDoc.collection('pages').get();
     console.log('getting data from facebook');
-    for (let pageDoc of fbPages.docs) {
-      const { access_token, id } = pageDoc.data();
+    const pagePromises = fbPages.docs.map((pageDoc: any) => {
+      const { access_token, id, name, category } = pageDoc.data();
       const requestFields = {
         fields: 'about,bio,location,website'
       };
 
       FB.setAccessToken(access_token);
-      FB.api(id, requestFields).then((result: any) => {
+      return FB.api(id, requestFields).then((result: any) => {
         // add fb page details to pages doc
-        userDoc.collection('pages').doc(id).update(result);
+        const { pageId, ...pageResults } = result;
+        const pageData = { uid, name, category, ...pageResults };
+        var pageDoc = db.collection('pages').doc(result.id);
+        return pageDoc.get().then((snap) => {
+          const addPagePromise = (snap.exists)
+            ? pageDoc.update(pageData)
+            : pageDoc.set(pageData);
+          return addPagePromise.then(() => {
+            return {...pageData}
+          });
+          }
+        );
       }).catch((err: Error) => {
         console.error(err);
       })
-    }
+    });
+    Promise.all(pagePromises).then((fbPagesRes: any) => {
+      setFbPages(fbPagesRes);
+    })
   }
 
   useEffect(() => {
@@ -57,9 +72,9 @@ function PageData() {
   });
 
   const facebookPages = fbPages?.map((pageData: any) => {
-    let { id, about, category, name, website } = pageData;
+    let { about, category, name, website } = pageData;
     return (
-      <div key={id} className="FbPageData">
+      <div key={name} className="FbPageData">
         <h3>{ name }</h3>
         <b>{ category }</b>
         <p>{ about }</p>
