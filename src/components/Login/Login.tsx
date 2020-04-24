@@ -18,15 +18,21 @@ const fbGraph = "https://graph.facebook.com/v6.0/";
 
 
 function Login() {
-  const [ currentUser, setCurrentUser ] = useState<string>();
+  const [ currentUser, setCurrentUser ] = useState<firebase.User | null>();
   const [ fbPages, setFbPages ] = useState<Array<any>>();
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((user: any) => {
+    firebase.auth().onAuthStateChanged((user) => {
       // get the currently logged in user
-      setCurrentUser(user.uid);
+      setCurrentUser(user);
     });
   })
+
+  const signOut = () => {
+    firebase.auth().signOut().then((res) => {
+      setCurrentUser(null)
+    })
+  }
 
 
   const facebookSignUp = (): void => {
@@ -68,7 +74,7 @@ function Login() {
   }
 
   const listFacebookPages = async () => {
-    var userDoc = db.collection('users').doc(currentUser);
+    var userDoc = db.collection('users').doc(currentUser!.uid);
     const doc = await userDoc.get();
     if (!doc.exists) {
       console.log('user not logged in!');
@@ -114,6 +120,7 @@ function Login() {
       <h1>Login</h1>
       <button onClick={facebookSignUp}>Sign Up with Facebook</button>
       <button onClick={listFacebookPages}>List my Pages</button>
+      <button onClick={signOut}>Sign Out</button>
       <h2>My Facebook Pages</h2>
       <div className="ManagedFbPages">
         { pageElements }

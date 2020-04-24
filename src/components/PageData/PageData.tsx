@@ -12,26 +12,26 @@ provider.addScope('manage_pages');
 
 
 function PageData() {
-  const [ currentUser, setCurrentUser ] = useState<string>();
+  const [ currentUser, setCurrentUser ] = useState<firebase.User | null>();
   const [ fbPages, setFbPages ] = useState<Array<any>>();
 
   useEffect(() => {
-    firebase.auth().onAuthStateChanged((user: any) => {
+    firebase.auth().onAuthStateChanged((user) => {
       // get the currently logged in user
-      setCurrentUser(user.uid);
+      setCurrentUser(user);
     });
   });
 
   const getFacebookPages = async () => {
     console.log('getting page data from firebase');
-    var userDoc = db.collection('users').doc(currentUser);
+    var userDoc = db.collection('users').doc(currentUser!.uid);
     const fbPagesFirebase = await userDoc.collection('pages').get();
     setFbPages(fbPagesFirebase.docs.map((doc: any) => doc.data()));
   }
 
   const syncPageData = async () => {
     // get user's fb pages
-    var userDoc = db.collection('users').doc(currentUser);
+    var userDoc = db.collection('users').doc(currentUser!.uid);
     const fbPages = await userDoc.collection('pages').get();
     console.log('getting data from facebook');
     for (let pageDoc of fbPages.docs) {
