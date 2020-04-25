@@ -2,8 +2,8 @@
   "functions": {
     "predeploy": [
       "firebase functions:config:set credentials=\"$(cat credentials.json)\"",
-      "npm --prefix \"$RESOURCE_DIR\" run lint",
-      "npm --prefix \"$RESOURCE_DIR\" run build"
+      "yarn --cwd \"$RESOURCE_DIR\" lint",
+      "yarn --cwd \"$RESOURCE_DIR\" build"
     ],
     "source": "functions"
   },
@@ -15,7 +15,8 @@
     "ignore": [
       "firebase.json",
       "**/.*",
-      "**/node_modules/**"
+      "**/node_modules/**",
+      "*credentials*.json"
     ],
     "rewrites": [
       {

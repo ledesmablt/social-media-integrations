@@ -18,15 +18,14 @@ const fbSignUp = functions.region("asia-east2").https.onCall(async (data, contex
   
   // get long-lived user access token
   console.log('getting FB long-lived access token');
-  const fbGraphRes: any = await axios.get(
-    fbGraph + decodeURI(`
-      oauth/access_token
-      ?grant_type=fb_exchange_token&
-      client_id=${credentials.clientId}&
-      client_secret=${credentials.clientSecret}&
-      fb_exchange_token=${tempAccessToken}
-    `).replace(/\s/g, "")
-  );
+  const fbTokenUrl = fbGraph + decodeURI(`
+    oauth/access_token
+    ?grant_type=fb_exchange_token&
+    client_id=${credentials.facebook.clientId}&
+    client_secret=${credentials.facebook.clientSecret}&
+    fb_exchange_token=${tempAccessToken}
+  `).replace(/( |\n)/g, "");
+  const fbGraphRes: any = await axios.get(fbTokenUrl);
   const accessToken = fbGraphRes.data.access_token;
       
   // get facebook userid using old access token
@@ -37,7 +36,7 @@ const fbSignUp = functions.region("asia-east2").https.onCall(async (data, contex
       
   // save firestore creds based on facebook login
   console.log('saving to Firestore');
-  let ref = db.collection('users').doc(uid);
+  const ref = db.collection('users').doc(uid);
   return await ref.set({
     auth: {
         facebook: { userId, accessToken }

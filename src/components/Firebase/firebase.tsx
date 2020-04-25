@@ -21,6 +21,7 @@ var functions: firebase.functions.Functions;
 if (process.env.NODE_ENV === "development") {
   functions = firebase.functions();
   functions.useFunctionsEmulator("http://localhost:5001");
+  console.log("FIREBASE - using emulated functions");
 }
 else {
   functions = firebase.app().functions("asia-east2");

@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import firebase, { functions } from './../Firebase';
 
 // @ts-ignore
 import FB from 'fb';
 
-// need to move this to a cloud function
-// require('dotenv').config();
-const facebookCredentials = {
-  clientId: process.env.REACT_APP_FB_CLIENT,
-  clientSecret: process.env.REACT_APP_FB_SECRET
-};
 
 // firebase init
 let db = firebase.firestore();
@@ -18,16 +11,14 @@ var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('email');
 provider.addScope('manage_pages');
 
-const fbGraph = "https://graph.facebook.com/v6.0/";
-
 
 function Login() {
   const [ currentUser, setCurrentUser ] = useState<firebase.User | null>();
   const [ fbPages, setFbPages ] = useState<Array<any>>();
 
   useEffect(() => {
+    // get the currently logged in user
     firebase.auth().onAuthStateChanged((user) => {
-      // get the currently logged in user
       setCurrentUser(user);
     });
   })
@@ -38,49 +29,15 @@ function Login() {
     })
   }
 
-
-  const facebookSignUp = (): void => {
+  const facebookSignUp = () => {
+    // sign up (saved to firebase.auth) and call function to get long-lived token
     firebase.auth().signInWithPopup(provider).then(async (result: any) => {
       var fbSignUp = functions.httpsCallable('fbSignUp');
-      // user gets saved to firebase auth already (result.user)
-      const uid: string = result.user.uid;
       const tempAccessToken: string = result.credential!.accessToken;
-      fbSignUp({ uid, tempAccessToken }).catch((err) => {
-        console.error(err)
-      });
-      return
-      
-      // get long-lived user access token
-      console.log('getting FB long-lived access token')
-      const fbGraphRes: any = await axios.get(
-        fbGraph + decodeURI(`
-          oauth/access_token
-            ?grant_type=fb_exchange_token&
-            client_id=${facebookCredentials.clientId}&
-            client_secret=${facebookCredentials.clientSecret}&
-            fb_exchange_token=${tempAccessToken}
-          `).replace(/ /g, "")
-      );
-      const accessToken = fbGraphRes.data.access_token;
-          
-      // get facebook userid using old access token
-      FB.setAccessToken(tempAccessToken);
-      console.log('getting FB userid')
-      const fbUserRes: any = await FB.api('me');
-      const userId: string = fbUserRes.id;
-            
-      // save firestore creds based on facebook login
-      console.log('saving to Firestore');
-      let ref = db.collection('users').doc(uid);
-      await ref.set({
-        auth: {
-          facebook: { userId, accessToken }
-        }
-      });
-    }).catch((error: any) => {
-      console.error(error);
-    });
+      return fbSignUp({ tempAccessToken }).catch(console.error);
+    }).catch(console.error);
   }
+
 
   const listFacebookPages = async () => {
     var userDoc = db.collection('users').doc(currentUser!.uid);
