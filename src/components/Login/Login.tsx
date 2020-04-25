@@ -5,11 +5,23 @@ import firebase from './../Firebase';
 // @ts-ignore
 import FB from 'fb';
 
-const appCredentials = require('./../../credentials.json');
-const facebookCredentials = appCredentials.facebook;
+// need to move this to a cloud function
+// require('dotenv').config();
+const facebookCredentials = {
+  clientId: process.env.REACT_APP_FB_CLIENT,
+  clientSecret: process.env.REACT_APP_FB_SECRET
+};
 
 // firebase init
 let db = firebase.firestore();
+var functions: firebase.functions.Functions;
+if (process.env.NODE_ENV === "development") {
+  functions = firebase.functions();
+  functions.useFunctionsEmulator("http://localhost:5001");
+}
+else {
+  functions = firebase.app().functions("asia-east2");
+}
 var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('email');
 provider.addScope('manage_pages');
@@ -37,9 +49,14 @@ function Login() {
 
   const facebookSignUp = (): void => {
     firebase.auth().signInWithPopup(provider).then(async (result: any) => {
+      var fbSignUp = functions.httpsCallable('fbSignUp');
       // user gets saved to firebase auth already (result.user)
       const uid: string = result.user.uid;
       const tempAccessToken: string = result.credential!.accessToken;
+      fbSignUp({ uid, tempAccessToken }).catch((err) => {
+        console.error(err)
+      });
+      return
       
       // get long-lived user access token
       console.log('getting FB long-lived access token')
