@@ -16,4 +16,18 @@ const firebaseCredentials = {
 };
 firebase.initializeApp(firebaseCredentials);
 
+// use emulator if running in dev
+var functions: firebase.functions.Functions;
+if (process.env.NODE_ENV === "development") {
+  functions = firebase.functions();
+  functions.useFunctionsEmulator("http://localhost:5001");
+}
+else {
+  functions = firebase.app().functions("asia-east2");
+}
+
+// exports
 export default firebase;
+export {
+  functions
+}

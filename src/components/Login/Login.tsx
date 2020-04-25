@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import firebase from './../Firebase';
+import firebase, { functions } from './../Firebase';
 
 // @ts-ignore
 import FB from 'fb';
@@ -14,14 +14,6 @@ const facebookCredentials = {
 
 // firebase init
 let db = firebase.firestore();
-var functions: firebase.functions.Functions;
-if (process.env.NODE_ENV === "development") {
-  functions = firebase.functions();
-  functions.useFunctionsEmulator("http://localhost:5001");
-}
-else {
-  functions = firebase.app().functions("asia-east2");
-}
 var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('email');
 provider.addScope('manage_pages');
