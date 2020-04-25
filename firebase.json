@@ -1,0 +1,33 @@
+{
+  "functions": {
+    "predeploy": [
+      "firebase functions:config:set credentials=\"$(cat credentials.json)\"",
+      "yarn --cwd \"$RESOURCE_DIR\" lint",
+      "yarn --cwd \"$RESOURCE_DIR\" build"
+    ],
+    "source": "functions"
+  },
+  "hosting": {
+    "public": "build",
+    "predeploy": [
+      "yarn build"
+    ],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "*credentials*.json"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    }
+  }
+}
