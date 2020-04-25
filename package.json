@@ -23,7 +23,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "emulate": "cd functions && yarn build && export GOOGLE_APPLICATION_CREDENTIALS=./firebase-admin-credentials.json && firebase emulators:start"
+    "emulate": "cd functions && yarn build && export GOOGLE_APPLICATION_CREDENTIALS=./firebase-admin-credentials.json && firebase functions:config:get > ./.runtimeconfig.json && firebase emulators:start"
   },
   "eslintConfig": {
     "extends": "react-app"

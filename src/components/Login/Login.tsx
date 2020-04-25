@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import firebase, { functions } from './../Firebase';
+import firebase, { functions, auth } from './../Firebase';
 
 // @ts-ignore
 import FB from 'fb';
@@ -7,10 +7,7 @@ import FB from 'fb';
 
 // firebase init
 let db = firebase.firestore();
-var provider = new firebase.auth.FacebookAuthProvider();
-provider.addScope('email');
-provider.addScope('manage_pages');
-
+const { facebookProvider } = auth;
 
 function Login() {
   const [ currentUser, setCurrentUser ] = useState<firebase.User | null>();
@@ -31,7 +28,7 @@ function Login() {
 
   const facebookSignUp = () => {
     // sign up (saved to firebase.auth) and call function to get long-lived token
-    firebase.auth().signInWithPopup(provider).then(async (result: any) => {
+    firebase.auth().signInWithPopup(facebookProvider).then(async (result: any) => {
       var fbSignUp = functions.httpsCallable('fbSignUp');
       const tempAccessToken: string = result.credential!.accessToken;
       return fbSignUp({ tempAccessToken }).catch(console.error);

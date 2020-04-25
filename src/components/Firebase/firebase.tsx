@@ -16,7 +16,7 @@ const firebaseCredentials = {
 };
 firebase.initializeApp(firebaseCredentials);
 
-// use emulator if running in dev
+// functions - use emulator if running in dev
 var functions: firebase.functions.Functions;
 if (process.env.NODE_ENV === "development") {
   functions = firebase.functions();
@@ -27,8 +27,18 @@ else {
   functions = firebase.app().functions("asia-east2");
 }
 
+// auth providers
+var facebookProvider = new firebase.auth.FacebookAuthProvider();
+facebookProvider.addScope('email');
+facebookProvider.addScope('manage_pages');
+
+const auth = {
+  facebookProvider
+};
+
 // exports
 export default firebase;
 export {
-  functions
+  functions,
+  auth
 }
